@@ -206,6 +206,7 @@ defmodule ExUnit.Runner do
       spawn_monitor(fn ->
         ExUnit.ProxyIO.proxy(self(), Process.group_leader())
         ExUnit.OnExitHandler.register(self)
+        # Add ExUnit.CaptureLog
 
         {us, test} =
           :timer.tc(fn ->
@@ -217,6 +218,7 @@ defmodule ExUnit.Runner do
             end
           end)
 
+        # Remove ExUnit.CaptureLog
         send parent, {self, :test_finished, %{test | time: us}}
         exit(:shutdown)
       end)
