@@ -149,6 +149,7 @@ defmodule ExUnit.Runner do
 
     {case_pid, case_ref} =
       spawn_monitor(fn ->
+        ExUnit.ProxyIO.proxy(self(), Process.group_leader())
         ExUnit.OnExitHandler.register(self)
 
         case exec_case_setup(test_case) do
@@ -203,6 +204,7 @@ defmodule ExUnit.Runner do
 
     {test_pid, test_ref} =
       spawn_monitor(fn ->
+        ExUnit.ProxyIO.proxy(self(), Process.group_leader())
         ExUnit.OnExitHandler.register(self)
 
         {us, test} =
