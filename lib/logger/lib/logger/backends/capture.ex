@@ -3,34 +3,46 @@ defmodule Logger.Backends.Capture do
 
   use GenEvent
 
-  def init(io_proxy) do
-    Process.group_leader(self(), io_proxy)
-    {:ok, configure([], [])}
+  def init(proxy, opts \\ []) do
+    {:ok, configure([], proxy, opts)}
   end
 
   def handle_call({:configure, options}, state) do
-    {:ok, :ok, configure(state.events, options)}
+    {:ok, :ok, configure(state.events, state.proxy, options)}
   end
 
-  def handle_event({_level, gl, _event}, state) when gl != Process.group_leader() do
+  def handle_event({_level, gl, _event}, %{proxy: proxy} = state) when gl != proxy do
     {:ok, state}
   end
 
-  def handle_event({level, _gl, {Logger, msg, ts, md}}, %{level: min_level} = state) do
-    if is_nil(min_level) or Logger.compare_levels(level, min_level) != :lt do
+  def handle_event({level, _gl, {Logger, msg, ts, md}}, state) do
+    if match_level?(level, state.level) do
       log_event(level, msg, ts, md, state)
     else
       {:ok, state}
     end
   end
 
+  def terminate(:get, state) do
+    {:ok, Enum.reverse(state.events)}
+  end
+
+  def terminate(_reason, _state),
+    do: :ok
+
+  defp match_level?(_lvl, nil),
+    do: true
+
+  defp match_level?(lvl, min) do
+    Logger.compare_levels(lvl, min) != :lt
+  end
+
   ## Helpers
 
-  defp configure(events, options) do
+  defp configure(events, proxy, options) do
     config =
       Application.get_env(:logger, :capture, [])
       |> configure_merge(options)
-    Application.put_env(:logger, :capture, config)
 
     format =
       Keyword.get(config, :format)
@@ -39,7 +51,8 @@ defmodule Logger.Backends.Capture do
     metadata = Keyword.get(config, :metadata, [])
     colors   = configure_colors(config)
     %{format: format, metadata: metadata,
-      level: level, colors: colors, events: events}
+      level: level, colors: colors,
+      events: events, proxy: proxy}
   end
 
   defp configure_merge(env, options) do
