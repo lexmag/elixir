@@ -208,7 +208,7 @@ defmodule ExUnit.Runner do
         {:ok, proxy} = IO.Proxy.start_link()
         Process.group_leader(self(), proxy)
         ExUnit.OnExitHandler.register(self)
-        # Add ExUnit.CaptureLog
+        # Add Logger.Backends.Capture
 
         {us, test} =
           :timer.tc(fn ->
@@ -220,7 +220,7 @@ defmodule ExUnit.Runner do
             end
           end)
 
-        # Remove ExUnit.CaptureLog
+        # Remove Logger.Backends.Capture
         send parent, {self, :test_finished, %{test | time: us}}
         exit(:shutdown)
       end)

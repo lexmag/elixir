@@ -116,6 +116,7 @@ defmodule Logger do
   The available backends by default are:
 
     * `:console` - Logs messages to the console (enabled by default)
+    * `:capture`
 
   Developers may also implement their own backends, an option that
   is explored with detail below.

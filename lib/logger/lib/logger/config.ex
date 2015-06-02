@@ -43,6 +43,7 @@ defmodule Logger.Config do
   end
 
   def translate_backend(:console), do: Logger.Backends.Console
+  def translate_backend(:capture), do: Logger.Backends.Capture
   def translate_backend(other),    do: other
 
   def __data__() do
