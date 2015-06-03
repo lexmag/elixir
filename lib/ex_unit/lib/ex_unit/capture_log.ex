@@ -16,7 +16,7 @@ defmodule ExUnit.CaptureLog do
     else
       :ok ->
         {:ok, output} = GenEvent.remove_handler(Logger, handler, :get)
-        output
+        IO.chardata_to_string(output)
     after
       Process.group_leader(self(), old_gl)
       IO.Proxy.stop(gl)

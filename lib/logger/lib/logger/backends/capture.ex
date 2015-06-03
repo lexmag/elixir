@@ -24,7 +24,7 @@ defmodule Logger.Backends.Capture do
   end
 
   def terminate(:get, state) do
-    {:ok, Enum.reverse(state.events)}
+    {:ok, state.events}
   end
 
   def terminate(_reason, _state),
@@ -72,16 +72,18 @@ defmodule Logger.Backends.Capture do
   end
 
   defp log_event(level, msg, ts, md, %{colors: colors, events: acc} = state) do
-    ansidata = format_event(level, msg, ts, md, state)
-    chardata = color_event(level, ansidata, colors)
-    {:ok, %{state | events: [chardata | acc]}}
+    message =
+      format_event(level, msg, ts, md, state)
+      |> color_event(level, colors)
+      |> IO.chardata_to_string
+    {:ok, %{state | events: [acc | message]}}
   end
 
   defp format_event(level, msg, ts, md, %{format: format, metadata: metadata}) do
     Logger.Formatter.format(format, level, msg, ts, Dict.take(md, metadata))
   end
 
-  defp color_event(level, data, %{enabled: true} = colors), do:
+  defp color_event(data, level, %{enabled: true} = colors), do:
     [IO.ANSI.format_fragment(Map.fetch!(colors, level), true), data | IO.ANSI.reset]
   defp color_event(_level, data, %{enabled: false}), do:
     data
