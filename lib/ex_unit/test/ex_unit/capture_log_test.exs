@@ -3,10 +3,12 @@ Code.require_file "../test_helper.exs", __DIR__
 defmodule ExUnit.CaptureLogTest do
   use ExUnit.Case
 
+  require Logger
+
   import ExUnit.CaptureLog
 
   test "no output" do
-    assert capture_log(fn -> end) == []
+    assert capture_log(fn -> end) == ""
   end
 
   test "assert inside" do
@@ -25,11 +27,23 @@ defmodule ExUnit.CaptureLogTest do
     assert group_leader == Process.group_leader()
   end
 
-  test "log levels" do
-    # ...
-  end
+  test "log tracking" do
+    events =
+      assert capture_log(fn ->
+        Logger.info "one"
+        capture_log(fn -> Logger.error "one" end)
+        Logger.warn "two"
+        parent = self()
+        spawn(fn ->
+          Logger.debug "three"
+          send(parent, :done)
+        end)
+        receive do: (:done -> :ok)
+      end)
 
-  test "capture nesting" do
-    # ...
+    assert events =~ "[info]  one\n\e[0m"
+    assert events =~ "[warn]  two\n\e[0m"
+    assert events =~ "[debug] three\n\e[0m"
+    refute events =~ "[error] one\n\e[0m"
   end
 end
