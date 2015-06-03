@@ -10,9 +10,10 @@ defmodule ProxyIOTest do
 
   test "proxying" do
     {:ok, pid} = StringIO.open("one")
-    {:ok, proxy} = ProxyIO.open(group_leader: pid)
+    {:ok, proxy} = ProxyIO.open(pid)
 
     assert IO.gets(proxy, ">") == "one"
+    assert IO.getn(proxy, ">") == :eof
     assert IO.write(proxy, "two") == :ok
     assert IO.puts(proxy, "three") == :ok
 
