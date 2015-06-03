@@ -149,7 +149,7 @@ defmodule ExUnit.Runner do
 
     {case_pid, case_ref} =
       spawn_monitor(fn ->
-        {:ok, proxy} = IO.Proxy.start_link()
+        {:ok, proxy} = ProxyIO.open()
         Process.group_leader(self(), proxy)
         ExUnit.OnExitHandler.register(self)
 
@@ -205,7 +205,7 @@ defmodule ExUnit.Runner do
 
     {test_pid, test_ref} =
       spawn_monitor(fn ->
-        {:ok, proxy} = IO.Proxy.start_link()
+        {:ok, proxy} = ProxyIO.open()
         Process.group_leader(self(), proxy)
         ExUnit.OnExitHandler.register(self)
         # Add Logger.Backends.Capture

@@ -1,7 +1,7 @@
 defmodule ExUnit.CaptureLog do
   def capture_log(_opts \\ [], fun) do
     old_gl = Process.group_leader()
-    {:ok, gl} = IO.Proxy.start_link()
+    {:ok, gl} = ProxyIO.open()
     handler = {Logger.Backends.Capture, make_ref()}
     try do
       Process.group_leader(self(), gl)
@@ -19,7 +19,7 @@ defmodule ExUnit.CaptureLog do
         IO.chardata_to_string(output)
     after
       Process.group_leader(self(), old_gl)
-      IO.Proxy.stop(gl)
+      ProxyIO.close(gl)
     end
   end
 end

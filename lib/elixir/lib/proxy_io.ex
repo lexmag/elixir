@@ -1,12 +1,12 @@
-defmodule IO.Proxy do
+defmodule ProxyIO do
   use GenServer
 
-  def start_link() do
+  def open() do
     GenServer.start_link(__MODULE__, nil)
   end
 
-  def stop(proxy, timeout \\ 5000) do
-    GenServer.call(proxy, :stop, timeout)
+  def close(proxy, timeout \\ 5000) do
+    GenServer.call(proxy, :close, timeout)
   end
 
   def handle_info({:io_request, from, ref, req}, state) do
@@ -15,7 +15,7 @@ defmodule IO.Proxy do
     {:noreply, state}
   end
 
-  def handle_call(:stop, _from, state) do
+  def handle_call(:close, _from, state) do
     {:stop, :normal, :ok, state}
   end
 end
