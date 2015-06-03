@@ -1,4 +1,4 @@
-defmodule ExUnit.CaptureLog do
+defmodule Logger.CaptureLog do
   def capture_log(_opts \\ [], fun) do
     old_gl = Process.group_leader()
     {:ok, gl} = ProxyIO.open()
