@@ -1,11 +1,11 @@
 Code.require_file "../test_helper.exs", __DIR__
 
-defmodule ExUnit.CaptureLogTest do
+defmodule Logger.CaptureLogTest do
   use ExUnit.Case
 
   require Logger
 
-  import ExUnit.CaptureLog
+  import Logger.CaptureLog
 
   test "no output" do
     assert capture_log(fn -> end) == ""
@@ -28,22 +28,30 @@ defmodule ExUnit.CaptureLogTest do
   end
 
   test "log tracking" do
-    events =
+    captured =
       assert capture_log(fn ->
         Logger.info "one"
-        capture_log(fn -> Logger.error "one" end)
+
+        captured = capture_log(fn -> Logger.error "one" end)
+        send(test = self(), {:nested, captured})
+
         Logger.warn "two"
-        parent = self()
+
         spawn(fn ->
           Logger.debug "three"
-          send(parent, :done)
+          send(test, :done)
         end)
         receive do: (:done -> :ok)
       end)
 
-    assert events =~ "[info]  one\n\e[0m"
-    assert events =~ "[warn]  two\n\e[0m"
-    assert events =~ "[debug] three\n\e[0m"
-    refute events =~ "[error] one\n\e[0m"
+    assert captured =~ "[info]  one\n\e[0m"
+    assert captured =~ "[warn]  two\n\e[0m"
+    assert captured =~ "[debug] three\n\e[0m"
+    refute captured =~ "[error] one\n\e[0m"
+
+    receive do
+      {:nested, captured} ->
+        assert captured =~ "[error] one\n\e[0m"
+    end
   end
 end
