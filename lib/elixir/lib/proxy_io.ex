@@ -1,8 +1,15 @@
 defmodule ProxyIO do
   use GenServer
 
-  def open() do
-    GenServer.start_link(__MODULE__, nil)
+  def open(opts \\ []) do
+    opts = Keyword.put_new(opts, :group_leader, Process.group_leader())
+    GenServer.start_link(__MODULE__, opts)
+  end
+
+  def init(opts) do
+    group_leader = Keyword.get(opts, :group_leader)
+    Process.group_leader(self(), group_leader)
+    {:ok, nil}
   end
 
   def close(proxy, timeout \\ 5000) do
