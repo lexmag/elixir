@@ -12,8 +12,6 @@ defmodule Logger.CaptureLogTest do
   end
 
   test "assert inside" do
-    group_leader = Process.group_leader()
-
     try do
       capture_log(fn ->
         assert false
@@ -22,9 +20,25 @@ defmodule Logger.CaptureLogTest do
       error in [ExUnit.AssertionError] ->
         assert error.message == "Expected truthy, got false"
     end
+  end
 
-    # Ensure no leakage on failures
-    assert group_leader == Process.group_leader()
+  test "no leakage on failures" do
+    group_leader = Process.group_leader()
+
+    test = self()
+    assert_raise ArgumentError, fn ->
+      capture_log(fn ->
+        send(test, {:proxy_io, Process.group_leader()})
+        raise ArgumentError
+      end)
+    end
+
+    receive do
+      {:proxy_io, pid} ->
+        ref = Process.monitor(pid)
+        assert_receive {:DOWN, ^ref, _, _, _}
+    end
+    assert Process.group_leader() == group_leader
   end
 
   test "log tracking" do
