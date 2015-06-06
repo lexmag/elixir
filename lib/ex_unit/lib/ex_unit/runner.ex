@@ -21,7 +21,7 @@ defmodule ExUnit.Runner do
     opts = normalize_opts(opts)
 
     {:ok, pid} = EM.start_link
-    formatters = [ExUnit.RunnerStats|opts[:formatters]]
+    formatters = [ExUnit.LoggerFormatter, ExUnit.RunnerStats | opts[:formatters]]
     Enum.each formatters, &(:ok = EM.add_handler(pid, &1, opts))
 
     config = %{
@@ -191,13 +191,23 @@ defmodule ExUnit.Runner do
   end
 
   defp run_test(config, test, context) do
-    EM.test_started(config.manager, test)
+    old_gl = Process.group_leader()
+    {:ok, proxy} = ProxyIO.open()
+    try do
+      Process.group_leader(self(), proxy)
+      test = %{test | group_leader: proxy}
 
-    if is_nil(test.state) do
-      test = spawn_test(config, test, Map.merge(test.tags, context))
+      EM.test_started(config.manager, test)
+
+      if is_nil(test.state) do
+        test = spawn_test(config, test, Map.merge(test.tags, context))
+      end
+
+      EM.test_finished(config.manager, test)
+    after
+      Process.group_leader(self(), old_gl)
+      ProxyIO.close(proxy)
     end
-
-    EM.test_finished(config.manager, test)
   end
 
   defp spawn_test(config, test, context) do
@@ -205,10 +215,7 @@ defmodule ExUnit.Runner do
 
     {test_pid, test_ref} =
       spawn_monitor(fn ->
-        {:ok, proxy} = ProxyIO.open()
-        Process.group_leader(self(), proxy)
         ExUnit.OnExitHandler.register(self)
-        # Add Logger.Backends.Capture
 
         {us, test} =
           :timer.tc(fn ->
@@ -220,7 +227,6 @@ defmodule ExUnit.Runner do
             end
           end)
 
-        # Remove Logger.Backends.Capture
         send parent, {self, :test_finished, %{test | time: us}}
         exit(:shutdown)
       end)

@@ -138,4 +138,30 @@ defmodule ExUnitTest do
       assert ExUnit.run == %{failures: 0, skipped: 0, total: 1}
     end) =~ "1 test, 0 failure"
   end
+
+  test "opportunistic logging" do
+    defmodule TestOpportunisticLogging do
+      use ExUnit.Case
+
+      require Logger
+
+      test "prints output" do
+        Logger.info "one"
+        assert 1 == 2
+      end
+
+      test "no output" do
+        Logger.error "two"
+        assert 1 == 1
+      end
+    end
+
+    output =
+      capture_io(fn ->
+        assert ExUnit.run() == %{failures: 1, skipped: 0, total: 2}
+      end)
+
+    assert output =~ "[info]  one"
+    refute output =~ "[error] two"
+  end
 end
