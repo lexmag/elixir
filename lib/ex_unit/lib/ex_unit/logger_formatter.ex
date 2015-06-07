@@ -13,8 +13,11 @@ defmodule ExUnit.LoggerFormatter do
   end
 
   def handle_event({:test_finished, %ExUnit.Test{state: {:failed, _reason}} = test}, state) do
-    {:ok, output} = remove_capture(test, :get)
-    IO.write(output)
+    case remove_capture(test, :get) do
+      {:ok, []} -> nil
+      {:ok, output} ->
+        IO.puts(["The following output was logged:\n" | output])
+    end
     {:ok, state}
   end
 

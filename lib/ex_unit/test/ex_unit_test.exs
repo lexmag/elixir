@@ -161,6 +161,7 @@ defmodule ExUnitTest do
         assert ExUnit.run() == %{failures: 1, skipped: 0, total: 2}
       end)
 
+    assert output =~ "The following output was logged:"
     assert output =~ "[info]  one"
     refute output =~ "[error] two"
   end
