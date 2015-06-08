@@ -3,12 +3,26 @@ defmodule ExUnit.LoggerFormatter do
 
   use GenEvent
 
-  def init(_opts) do
-    {:ok, nil}
+  def init(opts) do
+    colors = Keyword.put_new(opts[:colors], :enabled, IO.ANSI.enabled?)
+    backends = Logger.Config.backends()
+    Enum.map(backends, &remove_console/1)
+    {:ok, {backends, colors: colors}}
   end
 
-  def handle_event({:test_started, %ExUnit.Test{} = test}, state) do
-    :ok = add_capture(test)
+  def terminate(_reason, {backends, opts}) do
+    :ok = add_capture(%{group_leader: nil}, opts)
+    Enum.map(backends, &add_console/1)
+    case remove_capture(%{group_leader: nil}, :get) do
+      {:ok, []} -> nil
+      {:ok, output} ->
+        IO.puts(["The following output was logged:\n" | output])
+    end
+    :ok
+  end
+
+  def handle_event({:test_started, %ExUnit.Test{} = test}, {_, opts} = state) do
+    :ok = add_capture(test, opts)
     {:ok, state}
   end
 
@@ -30,11 +44,23 @@ defmodule ExUnit.LoggerFormatter do
     {:ok, map}
   end
 
-  defp add_capture(%{group_leader: pid}) do
-    GenEvent.add_handler(Logger, {Logger.Backends.Capture, pid}, {pid, []})
+  defp add_capture(%{group_leader: pid}, opts) do
+    GenEvent.add_handler(Logger, {Logger.Backends.Capture, pid}, {pid, opts})
   end
 
   defp remove_capture(%{group_leader: pid}, flag) do
     GenEvent.remove_handler(Logger, {Logger.Backends.Capture, pid}, flag)
   end
+
+  defp remove_console(:console) do
+    Logger.remove_backend(:console)
+  end
+
+  defp remove_console(_other), do: nil
+
+  defp add_console(:console) do
+    Logger.add_backend(:console)
+  end
+
+  defp add_console(_other), do: nil
 end
