@@ -20,7 +20,9 @@ defmodule ExUnit.Mixfile do
        colors: [],
        exclude: [],
        include: [],
-       formatters: [ExUnit.CLIFormatter],
+       formatters: [
+         ExUnit.LoggerFormatter,
+         ExUnit.CLIFormatter],
        refute_receive_timeout: 100,
        timeout: 60_000,
        trace: false]]

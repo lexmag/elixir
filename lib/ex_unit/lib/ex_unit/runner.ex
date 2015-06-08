@@ -21,7 +21,8 @@ defmodule ExUnit.Runner do
     opts = normalize_opts(opts)
 
     {:ok, pid} = EM.start_link
-    formatters = [ExUnit.LoggerFormatter, ExUnit.RunnerStats | opts[:formatters]]
+
+    formatters = [ExUnit.RunnerStats | opts[:formatters]]
     Enum.each formatters, &(:ok = EM.add_handler(pid, &1, opts))
 
     config = %{

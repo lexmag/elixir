@@ -1,5 +1,5 @@
 Logger.configure_backend(:console, colors: [enabled: false])
-ExUnit.start()
+ExUnit.start(formatters: [ExUnit.CLIFormatter])
 
 defmodule Logger.Case do
   use ExUnit.CaseTemplate
