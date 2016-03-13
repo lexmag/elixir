@@ -4011,12 +4011,21 @@ defmodule Kernel do
   """
   defmacro sigil_w(term, modifiers)
   defmacro sigil_w({:<<>>, _line, [string]}, modifiers) when is_binary(string) do
-    split_words(Macro.unescape_string(string), modifiers)
+    string = Macro.unescape_string(string, &unescape_map_w/1)
+    split_words(string, modifiers, true)
   end
 
   defmacro sigil_w({:<<>>, line, pieces}, modifiers) do
-    binary = {:<<>>, line, Macro.unescape_tokens(pieces)}
-    split_words(binary, modifiers)
+    pieces = Macro.unescape_tokens(pieces, &unescape_map_w/1)
+    split_words({:<<>>, line, pieces}, modifiers, true)
+  end
+
+  defp unescape_map_w(?\s), do: false
+  defp unescape_map_w(?\t), do: false
+  defp unescape_map_w(?\r), do: false
+  defp unescape_map_w(?\n), do: false
+  defp unescape_map_w(char) do
+    :elixir_interpolation.unescape_map(char)
   end
 
   @doc ~S"""
@@ -4039,25 +4048,27 @@ defmodule Kernel do
   """
   defmacro sigil_W(term, modifiers)
   defmacro sigil_W({:<<>>, _line, [string]}, modifiers) when is_binary(string) do
-    split_words(string, modifiers)
+    split_words(string, modifiers, false)
   end
 
-  defp split_words(string, []) do
-    split_words(string, [?s])
+  defp split_words(string, [], escaped?) do
+    split_words(string, [?s], escaped?)
   end
 
-  defp split_words(string, [mod])
+  defp split_words(string, [mod], escaped?)
   when mod == ?s or mod == ?a or mod == ?c do
     case is_binary(string) do
       true ->
-        parts = String.split(string)
+        parts = Kernel.Utils.split_words(string, escaped?)
         case mod do
           ?s -> parts
           ?a -> :lists.map(&String.to_atom/1, parts)
           ?c -> :lists.map(&String.to_char_list/1, parts)
         end
       false ->
-        parts = quote(do: String.split(unquote(string)))
+        parts = quote do
+          Kernel.Utils.split_words(unquote(string), unquote(escaped?))
+        end
         case mod do
           ?s -> parts
           ?a -> quote(do: :lists.map(&String.to_atom/1, unquote(parts)))
@@ -4066,7 +4077,7 @@ defmodule Kernel do
     end
   end
 
-  defp split_words(_string, _mods) do
+  defp split_words(_string, _mods, _escaped?) do
     raise ArgumentError, "modifier must be one of: s, a, c"
   end
 

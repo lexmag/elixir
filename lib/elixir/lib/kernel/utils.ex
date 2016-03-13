@@ -81,4 +81,31 @@ defmodule Kernel.Utils do
 
     :maps.put(:__struct__, module, :maps.from_list(fields))
   end
+
+  def split_words(string, escaped?) do
+    :lists.reverse(split_words(string, "", [], escaped?))
+  end
+
+  :lists.foreach(fn char ->
+    defp split_words(<<?\\, unquote(char)>> <> rest, buffer, result, true) do
+      split_words(rest, buffer <> <<?\\, unquote(char)>>, result, true)
+    end
+
+    defp split_words(<<unquote(char)>> <> rest, buffer, result, escaped?) do
+      split_words(rest, "", buffer_into_result(buffer, result), escaped?)
+    end
+  end, '\s\t\r\n')
+
+  defp split_words(<<char>> <> rest, buffer, result, escaped?) do
+    split_words(rest, buffer <> <<char>>, result, escaped?)
+  end
+
+  defp split_words(<<>>, buffer, result, _escaped?) do
+    buffer_into_result(buffer, result)
+  end
+
+  @compile {:inline, buffer_into_result: 2}
+
+  defp buffer_into_result("", result),     do: result
+  defp buffer_into_result(buffer, result), do: [buffer | result]
 end
