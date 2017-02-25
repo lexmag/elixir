@@ -78,24 +78,24 @@ defmodule Macro do
   defmacro unary_ops, do: unquote(unary_ops)
 
   @spec binary_op_props(atom) :: {:left | :right, precedence :: integer}
-  defp binary_op_props(o) do
-    case o do
-      o when o in [:<-, :\\]                  -> {:left,  40}
-      :when                                   -> {:right, 50}
-      :::                                     -> {:right, 60}
-      :|                                      -> {:right, 70}
-      :=                                      -> {:right, 90}
-      o when o in [:||, :|||, :or]            -> {:left, 130}
-      o when o in [:&&, :&&&, :and]           -> {:left, 140}
-      o when o in [:==, :!=, :=~, :===, :!==] -> {:left, 150}
-      o when o in [:<, :<=, :>=, :>]          -> {:left, 160}
-      o when o in [:|>, :<<<, :>>>, :<~, :~>,
-                :<<~, :~>>, :<~>, :<|>, :^^^] -> {:left, 170}
-      :in                                     -> {:left, 180}
-      o when o in [:++, :--, :.., :<>]        -> {:right, 200}
-      o when o in [:+, :-]                    -> {:left, 210}
-      o when o in [:*, :/]                    -> {:left, 220}
-      :.                                      -> {:left, 310}
+  defp binary_op_props(op) do
+    case op do
+      op when op in [:<-, :\\] -> {:left,  40}
+      :when -> {:right, 50}
+      ::: -> {:right, 60}
+      :| -> {:right, 70}
+      := -> {:right, 90}
+      op when op in [:||, :|||, :or] -> {:left, 130}
+      op when op in [:&&, :&&&, :and] -> {:left, 140}
+      op when op in [:==, :!=, :=~, :===, :!==] -> {:left, 150}
+      op when op in [:<, :<=, :>=, :>] -> {:left, 160}
+      op when op in [:|>, :<<<, :>>>, :<~, :~>,
+                     :<<~, :~>>, :<~>, :<|>, :^^^] -> {:left, 170}
+      :in -> {:left, 180}
+      op when op in [:++, :--, :.., :<>] -> {:right, 200}
+      op when op in [:+, :-] -> {:left, 210}
+      op when op in [:*, :/] -> {:left, 220}
+      :. -> {:left, 310}
     end
   end
 
