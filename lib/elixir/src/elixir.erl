@@ -28,7 +28,7 @@ start(_Type, _Args) ->
   %% In case there is a shell, we can't really change its
   %% encoding, so we just set binary to true. Otherwise
   %% we must set the encoding as the user with no shell
-  %% has encoding set to latin1.
+  %% has encoding set to Latin1.
   Opts =
     case init:get_argument(noshell) of
       {ok, _} -> [binary, {encoding, utf8}];

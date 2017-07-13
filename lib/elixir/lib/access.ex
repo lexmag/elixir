@@ -261,8 +261,8 @@ defmodule Access do
   def fetch(%struct{} = container, key) do
     struct.fetch(container, key)
   rescue
-    e in UndefinedFunctionError ->
-      raise_undefined_behaviour e, struct, {^struct, :fetch, [^container, ^key], _}
+    ex in UndefinedFunctionError ->
+      raise_undefined_behaviour ex, struct, {^struct, :fetch, [^container, ^key], _}
   end
 
   def fetch(map, key) when is_map(map) do
@@ -299,12 +299,12 @@ defmodule Access do
   @spec get(nil_container, any, default) :: default when default: var
   def get(container, key, default \\ nil)
 
-  def get(%{__struct__: struct} = container, key, default) do
+  def get(%struct{} = container, key, default) do
     try do
       struct.fetch(container, key)
     rescue
-      e in UndefinedFunctionError ->
-        raise_undefined_behaviour e, struct, {^struct, :fetch, [^container, ^key], _}
+      ex in UndefinedFunctionError ->
+        raise_undefined_behaviour ex, struct, {^struct, :fetch, [^container, ^key], _}
     else
       {:ok, value} -> value
       :error -> default
@@ -352,11 +352,11 @@ defmodule Access do
         {get_value, data} when get_value: var, data: container
   def get_and_update(container, key, fun)
 
-  def get_and_update(%{__struct__: struct} = container, key, fun) do
+  def get_and_update(%struct{} = container, key, fun) do
     struct.get_and_update(container, key, fun)
   rescue
-    e in UndefinedFunctionError ->
-      raise_undefined_behaviour e, struct, {^struct, :get_and_update, [^container, ^key, ^fun], _}
+    ex in UndefinedFunctionError ->
+      raise_undefined_behaviour ex, struct, {^struct, :get_and_update, [^container, ^key, ^fun], _}
   end
 
   def get_and_update(map, key, fun) when is_map(map) do
@@ -399,11 +399,11 @@ defmodule Access do
 
   """
   @spec pop(data, key) :: {value, data} when data: container
-  def pop(%{__struct__: struct} = container, key) do
+  def pop(%struct{} = container, key) do
     struct.pop(container, key)
   rescue
-    e in UndefinedFunctionError ->
-      raise_undefined_behaviour e, struct, {^struct, :pop, [^container, ^key], _}
+    ex in UndefinedFunctionError ->
+      raise_undefined_behaviour ex, struct, {^struct, :pop, [^container, ^key], _}
   end
 
   def pop(map, key) when is_map(map) do

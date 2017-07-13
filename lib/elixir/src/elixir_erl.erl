@@ -5,13 +5,13 @@
          definition_scope/2]).
 -include("elixir.hrl").
 
-%% TODO: Remove extra chunk functionality when OTP 20+.
+%% TODO: Remove extra chunk functionality once we support OTP 20+.
 
 add_beam_chunks(Bin, []) when is_binary(Bin) ->
   Bin;
 add_beam_chunks(Bin, NewChunks) when is_binary(Bin), is_list(NewChunks) ->
   {ok, _, OldChunks} = beam_lib:all_chunks(Bin),
-  Chunks = [{binary_to_list(K), V} || {K, V} <- NewChunks] ++ OldChunks,
+  Chunks = [{binary_to_list(Name), Data} || {Name, Data} <- NewChunks] ++ OldChunks,
   {ok, NewBin} = beam_lib:build_module(Chunks),
   NewBin.
 
@@ -101,7 +101,7 @@ elixir_to_erl(Tree) when is_float(Tree) ->
 elixir_to_erl(Tree) when is_binary(Tree) ->
   %% Note that our binaries are UTF-8 encoded and we are converting
   %% to a list using binary_to_list. The reason for this is that Erlang
-  %% considers a string in a binary to be encoded in latin1, so the bytes
+  %% considers a string in a binary to be encoded in Latin1, so the bytes
   %% are not changed in any fashion.
   {bin, 0, [{bin_element, 0, {string, 0, binary_to_list(Tree)}, default, default}]};
 elixir_to_erl(Function) when is_function(Function) ->

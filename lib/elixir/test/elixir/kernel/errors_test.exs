@@ -18,7 +18,7 @@ defmodule Kernel.ErrorsTest do
   test "invalid __CALLER__" do
     assert_eval_raise CompileError,
       "nofile:1: variable '__CALLER__' is unbound",
-      'defmodule Sample do def hello do __CALLER__ end end'
+      'defmodule Sample, do: (def hello, do: __CALLER__)'
   end
 
   test "invalid quoted token" do
