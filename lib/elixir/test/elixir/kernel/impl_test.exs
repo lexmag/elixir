@@ -3,7 +3,7 @@ Code.require_file "../test_helper.exs", __DIR__
 defmodule Kernel.ImplTest do
   use ExUnit.Case
 
-  defp capture_err(fun) do
+  defp capture_stderr(fun) do
     ExUnit.CaptureIO.capture_io(:stderr, fun)
   end
 
@@ -64,7 +64,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for undefined value" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour :abc
@@ -77,7 +77,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for callbacks without impl and @impl has been set before" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -93,7 +93,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for callbacks without impl and @impl has been set after" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -109,7 +109,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns when @impl is set on private function" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -121,7 +121,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns when @impl is set and no function" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -132,7 +132,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for @impl true and no behaviour" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @impl true
@@ -143,7 +143,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for @impl true with callback name not in behaviour" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -155,7 +155,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for @impl true with macro callback name not in behaviour" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.MacroBehaviour
@@ -167,7 +167,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for @impl true with callback kind not in behaviour" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.MacroBehaviour
@@ -179,7 +179,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for @impl true with wrong arity" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -191,7 +191,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for @impl false and there are no callbacks" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @impl false
@@ -202,7 +202,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for @impl false and it is a callback" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -214,7 +214,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for @impl module and no behaviour" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @impl Kernel.ImplTest.Behaviour
@@ -225,7 +225,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for @impl module with callback name not in behaviour" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -237,7 +237,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for @impl module with macro callback name not in behaviour" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.MacroBehaviour
@@ -249,7 +249,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for @impl module with macro callback kind not in behaviour" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.MacroBehaviour
@@ -261,7 +261,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for @impl module and callback belongs to another known module" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -274,7 +274,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns for @impl module and callback belongs to another unknown module" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -286,7 +286,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "does not warn for no @impl when overriding callback" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -302,7 +302,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "does not warn for overridable function missing @impl" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -319,7 +319,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns correctly for missing @impl only for end-user implemented function" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -339,7 +339,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns correctly for missing @impl even if it was set in overridable callback" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -360,7 +360,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "warns correctly for incorrect @impl in overridable callback" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule Kernel.ImplTest.ImplAttributes do
         @behaviour Kernel.ImplTest.Behaviour
@@ -379,7 +379,7 @@ defmodule Kernel.ImplTest do
   end
 
   test "does not warn for overridable callback when using __before_compile__/1 hook" do
-    assert capture_err(fn ->
+    assert capture_stderr(fn ->
       Code.eval_string """
       defmodule BeforeCompile do
         defmacro __before_compile__(_) do
