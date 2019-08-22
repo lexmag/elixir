@@ -4625,7 +4625,7 @@ defmodule Kernel do
       {call, impls} ->
         case Macro.decompose_call(call) do
           {_name, args} ->
-            validate_variable_only_args!(call, args)
+            assert_variable_only_args(call, args)
 
             macro_definition =
               case impls do
@@ -4653,7 +4653,7 @@ defmodule Kernel do
     end
   end
 
-  defp validate_variable_only_args!(call, args) do
+  defp assert_variable_only_args(call, args) do
     Enum.each(args, fn
       {ref, _meta, context} when is_atom(ref) and is_atom(context) ->
         :ok
