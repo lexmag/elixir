@@ -4568,27 +4568,27 @@ defmodule Kernel do
   ## Example
 
       defmodule Integer.Guards do
-        defguard is_even(value) when is_integer(value) and rem(value, 2) == 0
+        defguard is_even(value) when rem(value, 2) == 0
       end
 
       defmodule Collatz do
-        @moduledoc "Tools for working with the Collatz sequence."
+        @moduledoc "Utilities for working with the Collatz sequence."
+
         import Integer.Guards
 
-        @doc "Determines the number of steps `n` takes to reach `1`."
-        # If this function never converges, please let me know what `n` you used.
-        def converge(n) when n > 0, do: step(n, 0)
+        @doc "Determines the number of steps `num` takes to reach `1`."
+        def converge(num) when num > 0, do: step(num, 0)
 
         defp step(1, step_count) do
           step_count
         end
 
-        defp step(n, step_count) when is_even(n) do
-          step(div(n, 2), step_count + 1)
+        defp step(num, step_count) when is_even(num) do
+          step(div(num, 2), step_count + 1)
         end
 
-        defp step(n, step_count) do
-          step(3 * n + 1, step_count + 1)
+        defp step(num, step_count) do
+          step(3 * num + 1, step_count + 1)
         end
       end
 
